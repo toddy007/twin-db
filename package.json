@@ -1,0 +1,33 @@
+{
+  "name": "twin-db",
+  "version": "1.0.0",
+  "description": "A usefully local database.",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": ["dist"],
+  "scripts": {
+    "test": "tsx src/index.ts",
+    "prettier": "npx prettier --write \"**/*.{js,ts}\"",
+    "build": "npx tsc"
+  },
+  "author": {
+    "name": "Jaelson Kaciel",
+    "email": "jaelsonkaciel4@gmail.com",
+    "url": "https://github.com/toddy007"
+  },
+  "keywords": ["db", "database", "local", "localdb", "localdatabase", "twin"],
+  "license": "MIT",
+  "devDependencies": {
+    "prettier": "^3.8.1",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/toddy007/twin-db.git"
+  },
+  "engines": {
+    "node": ">=21.6.2"
+  }
+}
