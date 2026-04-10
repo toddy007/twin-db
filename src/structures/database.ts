@@ -168,7 +168,7 @@ export class TwinDB {
         const currentValue = this.get(path);
         if (!Array.isArray(currentValue))
             throw new Error(
-                'The value to pull is not an array or the path does not exists',
+                'The current value of this path is not an array or the path does not exists',
             );
 
         for (const value of values) {
