@@ -48,7 +48,7 @@ export class TwinDB {
             } // percorre todos os objetos definindo eles como {} para não dar erro abaixo
 
         await eval(
-            `this.data` +
+            'this.data' +
                 keys.map((key) => `['${key}']`).join('') +
                 ` = ${JSON.stringify(value)}`,
         );
@@ -61,7 +61,8 @@ export class TwinDB {
     public set(path: string, value: unknown) {
         if (!path || typeof path !== 'string')
             throw new Error(pathErrorMessage);
-        if (value === undefined) throw new Error('You must provide a value to update');
+        if (value === undefined)
+            throw new Error('You must provide a value to update');
 
         return this.update(path, value);
     }
@@ -96,7 +97,7 @@ export class TwinDB {
             'delete this.data' + keys.map((key) => `['${key}']`).join(''),
         );
         if (!success) throw new Error('Could not delete the value');
-        
+
         writeFileSync(this.path, JSON.stringify(this.data, null, 2), 'utf8');
 
         return this.data;
@@ -113,11 +114,8 @@ export class TwinDB {
                 `The value to ${isSum ? 'sum' : 'sub'} must be a number`,
             );
 
-        const currentValue = this.get(path);
-        if (typeof currentValue !== 'number')
-            throw new Error(
-                `The value to ${isSum ? 'sum' : 'sub'} is not a number or the path does not exists`,
-            );
+        let currentValue = (this.get(path) || 0) as unknown as number;
+        if (typeof currentValue !== 'number') currentValue = 0;
 
         return this.update(
             path,
@@ -154,11 +152,8 @@ export class TwinDB {
         if (!values || values.length === 0)
             throw new Error('You must provide a value to update');
 
-        const currentValue = this.get(path);
-        if (!Array.isArray(currentValue))
-            throw new Error(
-                'The current value of this path is not an array or the path does not exists',
-            );
+        let currentValue = (this.get(path) || []) as unknown as unknown[];
+        if (!Array.isArray(currentValue)) currentValue = [];
 
         currentValue.push(...values);
         return this.update(path, currentValue);
@@ -173,7 +168,7 @@ export class TwinDB {
         const currentValue = this.get(path);
         if (!Array.isArray(currentValue))
             throw new Error(
-                'The current value of this path is not an array or the path does not exists',
+                'The value to pull is not an array or the path does not exists',
             );
 
         for (const value of values) {
