@@ -86,3 +86,7 @@ database.pull('hobbies', 'cs', 'sleep') // now the hobbies is ["pizza", "valoran
   }
 }
 ```
+## Updates
+`MM/DD/YYYY`<br>
+04/09/2026 - 1.1.*
+- Now **sum**, **sub** and **push** sets the value to the value you passed in execution when the path does not exists.
