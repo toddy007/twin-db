@@ -36,23 +36,21 @@ export class TwinDB {
     private async update(path: string /*user.info.name*/, value: unknown) {
         const keys = path.split('.');
 
-        if (keys.length > 1)
-            for (let i = 0; i < keys.length - 1; i++) {
-                const thisKeys = keys.slice(0, i + 1);
-                const mappedKeys = thisKeys.map((key) => `['${key}']`);
-                const searchedValue = await eval(
-                    'this.data' + mappedKeys.join(''),
-                );
+        let current = this.data;
+        for (let i = 0; i < keys.length; i++) {
+            let key = keys[i];
 
-                if (typeof searchedValue !== 'object')
-                    await eval('this.data' + mappedKeys.join('') + ' = {}');
-            } // percorre todos os objetos definindo eles como {} para não dar erro abaixo
+            if (i === keys.length - 1) {
+                current[key] = value;
+                break;
+            } 
+            
+            if (typeof current !== 'object' || !current[key]) {
+                current[key] = {};
+            }
 
-        await eval(
-            'this.data' +
-                keys.map((key) => `['${key}']`).join('') +
-                ` = ${JSON.stringify(value)}`,
-        );
+            current = current[key] as Record<string, unknown>;
+        }
 
         writeFileSync(this.path, JSON.stringify(this.data, null, 2), 'utf8');
 
