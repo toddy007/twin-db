@@ -3,13 +3,14 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'fs';
 const pathErrorMessage = 'The path must be a string or you dont provide a path';
 
 export class TwinDB {
-    public data: object;
+    public data: Record<string, unknown>;
     public path: string;
     public name: string;
 
     public constructor(name: string = 'db') {
         this.path = 'database/' + name + '.json';
         this.name = name;
+        this.data = {};
 
         if (!existsSync('database')) mkdirSync('database');
         this.load();
@@ -81,7 +82,7 @@ export class TwinDB {
 
             if (typeof current[key] !== 'object') return null;
 
-            current = current[key];
+            current = current[key] as Record<string, unknown>;
         }
     }
 
