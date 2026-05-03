@@ -90,3 +90,6 @@ database.pull('hobbies', 'cs', 'sleep') // now the hobbies is ["pizza", "valoran
 `MM/DD/YYYY`<br>
 04/09/2026 - 1.1.*
 - Now **sum**, **sub** and **push** sets the value to the value you passed in execution when the path does not exists.
+
+05/03/2026 - 1.2.*
+- Now package doesn't uses eval anymore, providing better security.
