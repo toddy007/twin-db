@@ -16,7 +16,7 @@ export class TwinDB {
         this.load();
     }
 
-    private async load() {
+    private load() {
         let data: string;
         try {
             data = readFileSync(this.path, 'utf8');
@@ -33,7 +33,7 @@ export class TwinDB {
             );
     }
 
-    private async update(path: string /*user.info.name*/, value: unknown) {
+    private update(path: string /*user.info.name*/, value: unknown) {
         const keys = path.split('.');
 
         let current = this.data;
@@ -84,7 +84,7 @@ export class TwinDB {
         }
     }
 
-    public async delete(path: string) {
+    public delete(path: string) {
         if (!path || typeof path !== 'string')
             throw new Error(pathErrorMessage);
         const keys = path.split('.');
@@ -92,10 +92,7 @@ export class TwinDB {
         if (pathExists === null)
             throw new Error('The path does not exists or its value is null');
 
-        const success = await eval(
-            'delete this.data' + keys.map((key) => `['${key}']`).join(''),
-        );
-        if (!success) throw new Error('Could not delete the value');
+        this.update(path, null);
 
         writeFileSync(this.path, JSON.stringify(this.data, null, 2), 'utf8');
 
