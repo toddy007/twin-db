@@ -45,7 +45,7 @@ export class TwinDB {
                 break;
             } 
             
-            if (typeof current !== 'object' || !current[key]) {
+            if (typeof current[key] !== 'object' || Array.isArray(current[key]) || !current[key]) {
                 current[key] = {};
             }
 
