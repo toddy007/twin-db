@@ -1,16 +1,15 @@
 ### Before All
-Make sure you're using `"type": "module"` in package.json.<br>
 Make sure to pass just values that JSON accepts, if not, the values will be changed to `null`.
 # How to Use?
 To create a new database make the following step:
 ```js
-import TwinDB from 'twin-db';
+import { TwinDB } from 'twin-db';
 const database = new TwinDB('db');
 ```
 And your database is done.
 ### You can make various databases too:
 ```js
-import TwinDB from 'twin-db';
+import { TwinDB } from 'twin-db';
 const database = new TwinDB('db');
 const coolDatabase = new TwinDB('cool');
 ```
