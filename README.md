@@ -93,3 +93,6 @@ database.pull('hobbies', 'cs', 'sleep') // now the hobbies is ["pizza", "valoran
 
 05/03/2026 - 1.2.*
 - Now package doesn't uses eval anymore, providing better security.
+
+06/29/2026 - 1.3.*
+- Added support to require in commonjs.
