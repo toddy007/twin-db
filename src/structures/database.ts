@@ -1,4 +1,5 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'fs';
+import { SumOrSub } from '../types/global';
 
 const pathErrorMessage = 'The path must be a string or you dont provide a path';
 
@@ -43,8 +44,8 @@ export class TwinDB {
             if (i === keys.length - 1) {
                 current[key] = value;
                 break;
-            } 
-            
+            }
+
             if (typeof current[key] !== 'object' || Array.isArray(current[key]) || !current[key]) {
                 current[key] = {};
             }
@@ -177,5 +178,3 @@ export class TwinDB {
         return this.update(path, currentValue);
     }
 }
-
-export type SumOrSub = 'sum' | 'sub';
