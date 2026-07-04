@@ -3,8 +3,8 @@ import { DatabaseSync } from "node:sqlite";
 import path from 'node:path';
 
 export class SqliteStorage implements Storage {
-  private db: DatabaseSync;
-  private name: string;
+  private readonly db: DatabaseSync;
+  private readonly name: string;
 
   public constructor(name: string) {
     this.name = name;
@@ -27,11 +27,11 @@ export class SqliteStorage implements Storage {
     return true;
   }
 
-  public get(): object | undefined {
+  public get() {
     const row = this.db
       .prepare(`SELECT value FROM ${this.name} WHERE key = ?`)
       .get('data') as unknown as { value: string } | undefined;
 
-    return row && JSON.parse(row.value);
+    return row ? JSON.parse(row.value) : {};
   }
 }
