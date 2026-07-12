@@ -1,25 +1,38 @@
 import lodash from 'lodash';
-import { SumOrSub, TwinDBOptions, StorageInstanceType } from '../types/global';
-import { JSONStorage } from '../storages/JSONStorage';
-
-const pathErrorMessage = 'The path must be a string or you dont provide a path';
+import { SumOrSub, TwinDBOptions, StorageInstanceType } from '../types/global.js';
+import { JSONStorage } from '../storages/JSONStorage.js';
+import { SqliteStorage } from '../storages/SqliteStorage.js';
+import path from 'node:path';
+import { mkdirSync } from 'node:fs';
+import { pathErrorMessage } from '../utils/vars.js';
 
 export class TwinDB {
     public cache: Record<string, unknown>;
-    public name: string;
     private storage: StorageInstanceType;
 
-    public constructor(name: string = 'db', options?: TwinDBOptions) {
-        this.name = name;
+    public constructor(argPath: string = 'database/twin', options: TwinDBOptions = { storage: JSONStorage }) {
+        if (!argPath || typeof argPath !== 'string')
+            throw new Error(pathErrorMessage);
 
-        const Storage = options?.storage ?? JSONStorage;
-        this.storage = new Storage(name);
+        const solvedPath = path.resolve(process.cwd(), argPath);
+        mkdirSync(path.dirname(solvedPath), { recursive: true });
 
-        this.cache = this.storage.get() as Record<string, unknown>;
+        if (!options || typeof options !== 'object' || Array.isArray(options))
+            options = { storage: JSONStorage }
+
+        options.storage ||= JSONStorage;
+
+        if (![JSONStorage, SqliteStorage].includes(options.storage))
+            throw new Error('Invalid storage type passed in options');
+
+        // @ts-expect-error - options.table existts  there
+        this.storage = options.storage === SqliteStorage ? new options.storage(solvedPath, options.table, options.key) : new options.storage(solvedPath);
+
+        this.cache = this.storage.get();
     }
 
     private update(path: string /*user.info.name*/, value: unknown, fetch: boolean = false) {
-        if (fetch) this.cache = this.storage.get() as Record<string, unknown>;
+        if (fetch) this.cache = this.storage.get();
 
         lodash.set(this.cache, path, value);
 
@@ -41,7 +54,7 @@ export class TwinDB {
         if (!path || typeof path !== 'string')
             throw new Error(pathErrorMessage);
 
-        if (fetch) this.cache = this.storage.get() as Record<string, unknown>;
+        if (fetch) this.cache = this.storage.get();
 
         return lodash.get(this.cache, path, null);
     }
@@ -50,7 +63,7 @@ export class TwinDB {
         if (!path || typeof path !== 'string')
             throw new Error(pathErrorMessage);
 
-        if (fetch) this.cache = this.storage.get() as Record<string, unknown>;
+        if (fetch) this.cache = this.storage.get();
 
         const pathExists = this.get(path);
         if (pathExists === null)
@@ -70,7 +83,7 @@ export class TwinDB {
                 `The value to ${isSum ? 'sum' : 'sub'} must be a number`,
             );
 
-        if (fetch) this.cache = this.storage.get() as Record<string, unknown>;
+        if (fetch) this.cache = this.storage.get();
 
         let currentValue = (this.get(path) || 0) as unknown as number;
         if (typeof currentValue !== 'number') currentValue = 0;
@@ -95,7 +108,7 @@ export class TwinDB {
         if (!value || typeof value !== 'string')
             throw new Error('You must provide a string value to update');
 
-        if (fetch) this.cache = this.storage.get() as Record<string, unknown>;
+        if (fetch) this.cache = this.storage.get();
 
         const currentValue = this.get(path);
         if (typeof currentValue !== 'string')
@@ -112,7 +125,7 @@ export class TwinDB {
         if (!values || values.length === 0)
             throw new Error('You must provide a value to update');
 
-        if (fetch) this.cache = this.storage.get() as Record<string, unknown>;
+        if (fetch) this.cache = this.storage.get();
 
         let currentValue = (this.get(path) || []) as unknown as unknown[];
         if (!Array.isArray(currentValue)) currentValue = [];
@@ -127,7 +140,7 @@ export class TwinDB {
         if (!values || values.length === 0)
             throw new Error('You must provide a value to update');
 
-        if (fetch) this.cache = this.storage.get() as Record<string, unknown>;
+        if (fetch) this.cache = this.storage.get();
 
         const currentValue = this.get(path);
         if (!Array.isArray(currentValue))
@@ -138,7 +151,7 @@ export class TwinDB {
         for (const value of values) {
             const index = currentValue.indexOf(value);
             if (index < 0) continue;
-            
+
             currentValue.splice(index, 1);
         }
 

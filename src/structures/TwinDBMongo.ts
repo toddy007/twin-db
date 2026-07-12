@@ -2,17 +2,21 @@ import lodash from 'lodash';
 import { model, Model, connect } from 'mongoose';
 import { SumOrSub, DefaultSchemaType } from '../types/global.js';
 import { DefaultSchema } from '../utils/DefaultSchema.js';
-
-const pathErrorMessage = 'The path must be a string or you dont provide a path';
+import { DEFAULT_KEY, DEFAULT_NAME, pathErrorMessage } from '../utils/vars.js';
 
 export class TwinDBMongo {
-    private model: Model<DefaultSchemaType>;
-    private cache: Record<string, unknown>;
+    private readonly model: Model<DefaultSchemaType>;
+    public cache: Record<string, unknown>;
     private initPromise: Promise<void>;
+    private readonly id: string;
 
-    public constructor(connectionURI: string, name: string = 'twin') {
-        this.model = model(name, DefaultSchema);
+    public constructor(connectionURI: string, modelName: string = DEFAULT_NAME, id: string = DEFAULT_KEY) {
+        if (!modelName || typeof modelName !== 'string') modelName = DEFAULT_NAME;
+        if (!id || typeof id !== 'string') id = DEFAULT_KEY;
+
+        this.model = model(modelName, DefaultSchema);
         this.cache = {};
+        this.id = id;
 
         this.initPromise = this.init(connectionURI);
     }
@@ -20,11 +24,11 @@ export class TwinDBMongo {
     private async init(connectionURI: string) {
         await connect(connectionURI);
 
-        const data = await this.model.findById('data');
+        const data = await this.model.findById(this.id);
 
         if (!data) {
             const created = await this.model.create({
-                _id: 'data',
+                _id: this.id,
                 data: {},
             });
 
@@ -42,13 +46,13 @@ export class TwinDBMongo {
     private async update(path: string, value: unknown, fetch: boolean = false) {
         await this.ready();
         if (fetch) {
-            const data = await this.model.findById('data');
+            const data = await this.model.findById(this.id);
             this.cache = data ? data.data : {};
         }
 
         lodash.set(this.cache, path, value);
 
-        await this.model.updateOne({ _id: 'data' }, { data: this.cache });
+        await this.model.updateOne({ _id: this.id }, { data: this.cache });
 
         return this.cache;
     }
@@ -68,7 +72,7 @@ export class TwinDBMongo {
 
         await this.ready();
         if (fetch) {
-            const data = await this.model.findById('data');
+            const data = await this.model.findById(this.id);
             this.cache = data ? data.data : {};
         }
 
@@ -81,7 +85,7 @@ export class TwinDBMongo {
 
         await this.ready();
         if (fetch) {
-            const data = await this.model.findById('data');
+            const data = await this.model.findById(this.id);
             this.cache = data ? data.data : {};
         }
 
@@ -105,7 +109,7 @@ export class TwinDBMongo {
 
         await this.ready();
         if (fetch) {
-            const data = await this.model.findById('data');
+            const data = await this.model.findById(this.id);
             this.cache = data ? data.data : {};
         }
 
@@ -134,7 +138,7 @@ export class TwinDBMongo {
 
         await this.ready();
         if (fetch) {
-            const data = await this.model.findById('data');
+            const data = await this.model.findById(this.id);
             this.cache = data ? data.data : {};
         }
 
@@ -155,7 +159,7 @@ export class TwinDBMongo {
 
         await this.ready();
         if (fetch) {
-            const data = await this.model.findById('data');
+            const data = await this.model.findById(this.id);
             this.cache = data ? data.data : {};
         }
 
@@ -174,7 +178,7 @@ export class TwinDBMongo {
 
         await this.ready();
         if (fetch) {
-            const data = await this.model.findById('data');
+            const data = await this.model.findById(this.id);
             this.cache = data ? data.data : {};
         }
 

@@ -1,21 +1,25 @@
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { Storage } from "../types/Storage.js";
-import path from 'node:path';
 
 export class JSONStorage implements Storage {
   public readonly path: string;
 
-  public constructor(name: string) {
-    this.path = path.join(process.cwd(), 'database', name + '.json');
+  public constructor(path: string) {
+    if (!path.endsWith('.json'))
+      path += '.json';
+    this.path = path;
 
-    if (!existsSync(this.path))
-      writeFileSync(this.path, '{}', 'utf8');
+    if (!existsSync(path))
+      writeFileSync(path, '{}', 'utf8');
     else {
-      const data = readFileSync(this.path, 'utf8');
-      const parsedData = JSON.parse(data).catch(() => null);
+      const data = readFileSync(path, 'utf8');
+      let parsedData;
+      try {
+        parsedData = JSON.parse(data);
+      } catch (_) { }
 
       if ((!data) || (!parsedData) || typeof parsedData !== 'object' || Array.isArray(parsedData))
-        writeFileSync(this.path, '{}', 'utf8');
+        writeFileSync(path, '{}', 'utf8');
     }
   }
 
@@ -25,10 +29,17 @@ export class JSONStorage implements Storage {
       data = readFileSync(this.path, 'utf8');
     } catch (_) { }
 
-    if (!data)
+    let parsedData;
+    try {
+      if (data)
+        parsedData = JSON.parse(data);
+    } catch (_) { }
+
+    const checkedData = data && parsedData && typeof parsedData === 'object' && !Array.isArray(parsedData);
+    if (!checkedData)
       writeFileSync(this.path, '{}', 'utf8');
 
-    return data ? JSON.parse(data) : {};
+    return checkedData ? parsedData : {};
   }
 
   public set(value: string) {

@@ -1,3 +1,5 @@
-import { TwinDB } from './structures/TwinDB';
+export { TwinDB } from './structures/TwinDB.js';
+export { TwinDBMongo } from './structures/TwinDBMongo.js';
 
-export { TwinDB };
+export { JSONStorage } from './storages/JSONStorage.js';
+export { SqliteStorage } from './storages/SqliteStorage.js';
