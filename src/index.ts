@@ -1,3 +1,3 @@
-import { TwinDB } from './structures/database';
+import { TwinDB } from './structures/TwinDB';
 
 export { TwinDB };

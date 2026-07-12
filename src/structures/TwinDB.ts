@@ -1,106 +1,65 @@
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'fs';
-import { SumOrSub } from '../types/global';
+import lodash from 'lodash';
+import { SumOrSub, TwinDBOptions, StorageInstanceType } from '../types/global';
+import { JSONStorage } from '../storages/JSONStorage';
 
 const pathErrorMessage = 'The path must be a string or you dont provide a path';
 
 export class TwinDB {
-    public data: Record<string, unknown>;
-    public path: string;
+    public cache: Record<string, unknown>;
     public name: string;
+    private storage: StorageInstanceType;
 
-    public constructor(name: string = 'db') {
-        this.path = 'database/' + name + '.json';
+    public constructor(name: string = 'db', options?: TwinDBOptions) {
         this.name = name;
-        this.data = {};
 
-        if (!existsSync('database')) mkdirSync('database');
-        this.load();
+        const Storage = options?.storage ?? JSONStorage;
+        this.storage = new Storage(name);
+
+        this.cache = this.storage.get() as Record<string, unknown>;
     }
 
-    private load() {
-        let data: string;
-        try {
-            data = readFileSync(this.path, 'utf8');
-        } catch (e) {
-            data = '';
-        }
-        this.data = data ? JSON.parse(data) : {};
+    private update(path: string /*user.info.name*/, value: unknown, fetch: boolean = false) {
+        if (fetch) this.cache = this.storage.get() as Record<string, unknown>;
 
-        if (!data)
-            writeFileSync(
-                this.path,
-                JSON.stringify(this.data, null, 2),
-                'utf8',
-            );
+        lodash.set(this.cache, path, value);
+
+        this.storage.set(JSON.stringify(this.cache));
+
+        return this.cache;
     }
 
-    private update(path: string /*user.info.name*/, value: unknown) {
-        const keys = path.split('.');
-
-        let current = this.data;
-        for (let i = 0; i < keys.length; i++) {
-            let key = keys[i];
-
-            if (i === keys.length - 1) {
-                current[key] = value;
-                break;
-            }
-
-            if (typeof current[key] !== 'object' || Array.isArray(current[key]) || !current[key]) {
-                current[key] = {};
-            }
-
-            current = current[key] as Record<string, unknown>;
-        }
-
-        writeFileSync(this.path, JSON.stringify(this.data, null, 2), 'utf8');
-
-        return this.data;
-    }
-
-    public set(path: string, value: unknown) {
+    public set(path: string, value: unknown, fetch: boolean = false) {
         if (!path || typeof path !== 'string')
             throw new Error(pathErrorMessage);
         if (value === undefined)
             throw new Error('You must provide a value to update');
 
-        return this.update(path, value);
+        return this.update(path, value, fetch);
     }
 
-    public get(path: string): unknown | null {
+    public get(path: string, fetch: boolean = false): unknown | null {
         if (!path || typeof path !== 'string')
             throw new Error(pathErrorMessage);
-        const keys = path.split('.');
-        let current = this.data;
-        let i = 0;
 
-        for (const key of keys) {
-            i++;
+        if (fetch) this.cache = this.storage.get() as Record<string, unknown>;
 
-            if (i === keys.length) return current[key] ?? null;
-
-            if (typeof current[key] !== 'object') return null;
-
-            current = current[key] as Record<string, unknown>;
-        }
+        return lodash.get(this.cache, path, null);
     }
 
-    public delete(path: string) {
+    public delete(path: string, fetch: boolean = false) {
         if (!path || typeof path !== 'string')
             throw new Error(pathErrorMessage);
-        const keys = path.split('.');
+
+        if (fetch) this.cache = this.storage.get() as Record<string, unknown>;
+
         const pathExists = this.get(path);
         if (pathExists === null)
             throw new Error('The path does not exists or its value is null');
 
-        this.update(path, null);
-
-        writeFileSync(this.path, JSON.stringify(this.data, null, 2), 'utf8');
-
-        return this.data;
+        return this.update(path, null);
     }
 
-    private sumOrSub(path: string, value: number, type: SumOrSub) {
+    private sumOrSub(path: string, value: number, type: SumOrSub, fetch: boolean = false) {
         if (!path || typeof path !== 'string')
             throw new Error(pathErrorMessage);
         if (!type || !['sum', 'sub'].includes(type))
@@ -111,6 +70,8 @@ export class TwinDB {
                 `The value to ${isSum ? 'sum' : 'sub'} must be a number`,
             );
 
+        if (fetch) this.cache = this.storage.get() as Record<string, unknown>;
+
         let currentValue = (this.get(path) || 0) as unknown as number;
         if (typeof currentValue !== 'number') currentValue = 0;
 
@@ -120,19 +81,21 @@ export class TwinDB {
         );
     }
 
-    public sum(path: string, value: number) {
-        return this.sumOrSub(path, value, 'sum');
+    public sum(path: string, value: number, fetch: boolean = false) {
+        return this.sumOrSub(path, value, 'sum', fetch);
     }
 
-    public sub(path: string, value: number) {
-        return this.sumOrSub(path, value, 'sub');
+    public sub(path: string, value: number, fetch: boolean = false) {
+        return this.sumOrSub(path, value, 'sub', fetch);
     }
 
-    public concat(path: string, value: string) {
+    public concat(path: string, value: string, fetch: boolean = false) {
         if (!path || typeof path !== 'string')
             throw new Error(pathErrorMessage);
         if (!value || typeof value !== 'string')
             throw new Error('You must provide a string value to update');
+
+        if (fetch) this.cache = this.storage.get() as Record<string, unknown>;
 
         const currentValue = this.get(path);
         if (typeof currentValue !== 'string')
@@ -143,11 +106,13 @@ export class TwinDB {
         return this.update(path, currentValue + value);
     }
 
-    public push(path: string, ...values: unknown[]) {
+    public push(path: string, values: unknown[], fetch: boolean = false) {
         if (!path || typeof path !== 'string')
             throw new Error(pathErrorMessage);
         if (!values || values.length === 0)
             throw new Error('You must provide a value to update');
+
+        if (fetch) this.cache = this.storage.get() as Record<string, unknown>;
 
         let currentValue = (this.get(path) || []) as unknown as unknown[];
         if (!Array.isArray(currentValue)) currentValue = [];
@@ -156,11 +121,13 @@ export class TwinDB {
         return this.update(path, currentValue);
     }
 
-    public pull(path: string, ...values: unknown[]) {
+    public pull(path: string, values: unknown[], fetch: boolean = false) {
         if (!path || typeof path !== 'string')
             throw new Error(pathErrorMessage);
         if (!values || values.length === 0)
             throw new Error('You must provide a value to update');
+
+        if (fetch) this.cache = this.storage.get() as Record<string, unknown>;
 
         const currentValue = this.get(path);
         if (!Array.isArray(currentValue))
@@ -171,7 +138,7 @@ export class TwinDB {
         for (const value of values) {
             const index = currentValue.indexOf(value);
             if (index < 0) continue;
-
+            
             currentValue.splice(index, 1);
         }
 
