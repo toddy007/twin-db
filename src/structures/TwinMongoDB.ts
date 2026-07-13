@@ -10,8 +10,13 @@ export class TwinMongoDB {
     private initPromise: Promise<void>;
     private readonly id: string;
 
-    public constructor(connectionURI: string, modelName: string = DEFAULT_NAME, id: string = DEFAULT_KEY) {
-        if (!modelName || typeof modelName !== 'string') modelName = DEFAULT_NAME;
+    public constructor(
+        connectionURI: string,
+        modelName: string = DEFAULT_NAME,
+        id: string = DEFAULT_KEY,
+    ) {
+        if (!modelName || typeof modelName !== 'string')
+            modelName = DEFAULT_NAME;
         if (!id || typeof id !== 'string') id = DEFAULT_KEY;
 
         this.client = new MongoClient(connectionURI);
@@ -24,7 +29,9 @@ export class TwinMongoDB {
     private async init(modelName: string) {
         await this.client.connect();
 
-        this.collection = this.client.db().collection<DefaultSchemaType>(modelName);
+        this.collection = this.client
+            .db()
+            .collection<DefaultSchemaType>(modelName);
 
         const data = await this.collection.findOne({ _id: this.id });
 
@@ -56,7 +63,11 @@ export class TwinMongoDB {
 
         lodash.set(this.cache, path, value);
 
-        await this.collection.updateOne({ _id: this.id }, { $set: { data: this.cache } }, { upsert: true });
+        await this.collection.updateOne(
+            { _id: this.id },
+            { $set: { data: this.cache } },
+            { upsert: true },
+        );
 
         return this.cache;
     }
@@ -70,7 +81,10 @@ export class TwinMongoDB {
         return this.update(path, value, fetch);
     }
 
-    public async get(path: string, fetch: boolean = false): Promise<unknown | null> {
+    public async get(
+        path: string,
+        fetch: boolean = false,
+    ): Promise<unknown | null> {
         if (!path || typeof path !== 'string')
             throw new Error(pathErrorMessage);
 
@@ -100,7 +114,12 @@ export class TwinMongoDB {
         return this.update(path, null);
     }
 
-    private async sumOrSub(path: string, value: number, type: SumOrSub, fetch: boolean = false) {
+    private async sumOrSub(
+        path: string,
+        value: number,
+        type: SumOrSub,
+        fetch: boolean = false,
+    ) {
         if (!path || typeof path !== 'string')
             throw new Error(pathErrorMessage);
         if (!type || !['sum', 'sub'].includes(type))
@@ -117,7 +136,7 @@ export class TwinMongoDB {
             this.cache = data ? data.data : {};
         }
 
-        let currentValue = (await this.get(path) || 0) as unknown as number;
+        let currentValue = ((await this.get(path)) || 0) as unknown as number;
         if (typeof currentValue !== 'number') currentValue = 0;
 
         return this.update(
@@ -167,7 +186,8 @@ export class TwinMongoDB {
             this.cache = data ? data.data : {};
         }
 
-        let currentValue = (await this.get(path) || []) as unknown as unknown[];
+        let currentValue = ((await this.get(path)) ||
+            []) as unknown as unknown[];
         if (!Array.isArray(currentValue)) currentValue = [];
 
         currentValue.push(...values);

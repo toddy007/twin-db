@@ -1,5 +1,9 @@
 import lodash from 'lodash';
-import { SumOrSub, TwinDBOptions, StorageInstanceType } from '../types/global.js';
+import {
+    SumOrSub,
+    TwinDBOptions,
+    StorageInstanceType,
+} from '../types/global.js';
 import { JSONStorage } from '../storages/JSONStorage.js';
 import { SqliteStorage } from '../storages/SqliteStorage.js';
 import path from 'node:path';
@@ -10,7 +14,10 @@ export class TwinDB {
     public cache: Record<string, unknown>;
     private storage: StorageInstanceType;
 
-    public constructor(argPath: string = 'database/twin', options: TwinDBOptions = { storage: JSONStorage }) {
+    public constructor(
+        argPath: string = 'database/twin',
+        options: TwinDBOptions = { storage: JSONStorage },
+    ) {
         if (!argPath || typeof argPath !== 'string')
             throw new Error(pathErrorMessage);
 
@@ -18,7 +25,7 @@ export class TwinDB {
         mkdirSync(path.dirname(solvedPath), { recursive: true });
 
         if (!options || typeof options !== 'object' || Array.isArray(options))
-            options = { storage: JSONStorage }
+            options = { storage: JSONStorage };
 
         options.storage ||= JSONStorage;
 
@@ -26,12 +33,19 @@ export class TwinDB {
             throw new Error('Invalid storage type passed in options');
 
         // @ts-expect-error - options.table existts  there
-        this.storage = options.storage === SqliteStorage ? new options.storage(solvedPath, options.table, options.key) : new options.storage(solvedPath);
+        this.storage =
+            options.storage === SqliteStorage
+                ? new options.storage(solvedPath, options.table, options.key)
+                : new options.storage(solvedPath);
 
         this.cache = this.storage.get();
     }
 
-    private update(path: string /*user.info.name*/, value: unknown, fetch: boolean = false) {
+    private update(
+        path: string /*user.info.name*/,
+        value: unknown,
+        fetch: boolean = false,
+    ) {
         if (fetch) this.cache = this.storage.get();
 
         lodash.set(this.cache, path, value);
@@ -72,7 +86,12 @@ export class TwinDB {
         return this.update(path, null);
     }
 
-    private sumOrSub(path: string, value: number, type: SumOrSub, fetch: boolean = false) {
+    private sumOrSub(
+        path: string,
+        value: number,
+        type: SumOrSub,
+        fetch: boolean = false,
+    ) {
         if (!path || typeof path !== 'string')
             throw new Error(pathErrorMessage);
         if (!type || !['sum', 'sub'].includes(type))
