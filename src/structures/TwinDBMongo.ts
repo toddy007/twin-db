@@ -52,7 +52,7 @@ export class TwinDBMongo {
 
         lodash.set(this.cache, path, value);
 
-        await this.model.updateOne({ _id: this.id }, { data: this.cache });
+        await this.model.updateOne({ _id: this.id }, { data: this.cache }, { upsert: true });
 
         return this.cache;
     }
