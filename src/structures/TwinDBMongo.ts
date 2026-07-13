@@ -1,11 +1,11 @@
 import lodash from 'lodash';
-import { model, Model, connect } from 'mongoose';
+import { MongoClient, Collection } from 'mongodb';
 import { SumOrSub, DefaultSchemaType } from '../types/global.js';
-import { DefaultSchema } from '../utils/DefaultSchema.js';
 import { DEFAULT_KEY, DEFAULT_NAME, pathErrorMessage } from '../utils/vars.js';
 
 export class TwinDBMongo {
-    private readonly model: Model<DefaultSchemaType>;
+    private readonly client: MongoClient;
+    private collection!: Collection<DefaultSchemaType>;
     public cache: Record<string, unknown>;
     private initPromise: Promise<void>;
     private readonly id: string;
@@ -14,29 +14,33 @@ export class TwinDBMongo {
         if (!modelName || typeof modelName !== 'string') modelName = DEFAULT_NAME;
         if (!id || typeof id !== 'string') id = DEFAULT_KEY;
 
-        this.model = model(modelName, DefaultSchema);
+        this.client = new MongoClient(connectionURI);
         this.cache = {};
         this.id = id;
 
-        this.initPromise = this.init(connectionURI);
+        this.initPromise = this.init(modelName);
     }
 
-    private async init(connectionURI: string) {
-        await connect(connectionURI);
+    private async init(modelName: string) {
+        await this.client.connect();
 
-        const data = await this.model.findById(this.id);
+        this.collection = this.client.db().collection<DefaultSchemaType>(modelName);
+
+        const data = await this.collection.findOne({ _id: this.id });
 
         if (!data) {
-            const created = await this.model.create({
-                _id: this.id,
-                data: {},
-            });
+            const created: DefaultSchemaType = { _id: this.id, data: {} };
+            await this.collection.insertOne(created);
 
             this.cache = created.data;
             return;
         }
 
         this.cache = data.data;
+    }
+
+    public async close() {
+        await this.client.close();
     }
 
     private async ready() {
@@ -46,13 +50,13 @@ export class TwinDBMongo {
     private async update(path: string, value: unknown, fetch: boolean = false) {
         await this.ready();
         if (fetch) {
-            const data = await this.model.findById(this.id);
+            const data = await this.collection.findOne({ _id: this.id });
             this.cache = data ? data.data : {};
         }
 
         lodash.set(this.cache, path, value);
 
-        await this.model.updateOne({ _id: this.id }, { data: this.cache }, { upsert: true });
+        await this.collection.updateOne({ _id: this.id }, { $set: { data: this.cache } }, { upsert: true });
 
         return this.cache;
     }
@@ -72,7 +76,7 @@ export class TwinDBMongo {
 
         await this.ready();
         if (fetch) {
-            const data = await this.model.findById(this.id);
+            const data = await this.collection.findOne({ _id: this.id });
             this.cache = data ? data.data : {};
         }
 
@@ -85,7 +89,7 @@ export class TwinDBMongo {
 
         await this.ready();
         if (fetch) {
-            const data = await this.model.findById(this.id);
+            const data = await this.collection.findOne({ _id: this.id });
             this.cache = data ? data.data : {};
         }
 
@@ -109,7 +113,7 @@ export class TwinDBMongo {
 
         await this.ready();
         if (fetch) {
-            const data = await this.model.findById(this.id);
+            const data = await this.collection.findOne({ _id: this.id });
             this.cache = data ? data.data : {};
         }
 
@@ -138,7 +142,7 @@ export class TwinDBMongo {
 
         await this.ready();
         if (fetch) {
-            const data = await this.model.findById(this.id);
+            const data = await this.collection.findOne({ _id: this.id });
             this.cache = data ? data.data : {};
         }
 
@@ -159,7 +163,7 @@ export class TwinDBMongo {
 
         await this.ready();
         if (fetch) {
-            const data = await this.model.findById(this.id);
+            const data = await this.collection.findOne({ _id: this.id });
             this.cache = data ? data.data : {};
         }
 
@@ -178,7 +182,7 @@ export class TwinDBMongo {
 
         await this.ready();
         if (fetch) {
-            const data = await this.model.findById(this.id);
+            const data = await this.collection.findOne({ _id: this.id });
             this.cache = data ? data.data : {};
         }
 
