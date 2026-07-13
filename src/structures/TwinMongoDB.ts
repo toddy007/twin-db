@@ -3,7 +3,7 @@ import { MongoClient, Collection } from 'mongodb';
 import { SumOrSub, DefaultSchemaType } from '../types/global.js';
 import { DEFAULT_KEY, DEFAULT_NAME, pathErrorMessage } from '../utils/vars.js';
 
-export class TwinDBMongo {
+export class TwinMongoDB {
     private readonly client: MongoClient;
     private collection!: Collection<DefaultSchemaType>;
     public cache: Record<string, unknown>;
