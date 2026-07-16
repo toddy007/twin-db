@@ -5,7 +5,12 @@ Make sure to pass just values that JSON accepts, if not, the values will be chan
 To create a new database make the following step:
 ```js
 import { TwinDB } from 'twin-db';
-const database = new TwinDB('database/db');
+const database = new TwinDB('database/twin');
+```
+or
+```js
+const { TwinDB } = require('twin-db');
+const database = new TwinDB('database/twin');
 ```
 And your database is done.
 ### You can make various databases too:
@@ -14,7 +19,7 @@ import { TwinDB } from 'twin-db';
 const database = new TwinDB('database/db');
 const coolDatabase = new TwinDB('database/cool');
 ```
-> The first argument is a **path**, not just a name — folders in it are created automatically if they don't exist. If you don't pass one, it defaults to `database/twin`.
+> The first argument is a file **path** — folders in it are created automatically if they don't exist. If you don't pass one, it defaults to `database/twin`.
 
 # Storages
 By default, `TwinDB` saves your data in a local `.json` file (`JSONStorage`). If you'd rather store it in a local SQLite database, pass `SqliteStorage` in the options:
@@ -31,7 +36,7 @@ const database = new TwinDB('database/db', {
   key: 'main',    // defaults to "data"
 });
 ```
-Both storages implement the same interface, so switching between them doesn't change any of the methods below.
+Both storages implement the same interface, so switching between them doesn't change any of the methods in **Database Methods**.
 
 # TwinMongoDB
 If you'd rather store your data in MongoDB instead of locally, use `TwinMongoDB`. It shares the exact same methods as `TwinDB` (`set`, `get`, `delete`, `sum`, `sub`, `concat`, `push`, `pull`, all with the same `fetch` parameter), the only difference is how you create it and that every method is asynchronous:
@@ -82,18 +87,18 @@ Get a value from a given path.
 ```js
 database.get('surname'); // returns "Costa".
 ```
-###  3. Delete Method
+###  3. Delete/Remove Method
 Deletes a value from data.
 ```js
 database.delete('cool') // now the cool value no longer exists.
 database.delete('address.country') // now the country no longer exists too.
 ```
-### 4. Sum Method
+### 4. Sum/Add Method
 Sum the current value of the given path with the given value.
 ```js
 database.sum('age', 30); // now the age is 80.
 ```
-### 5. Sub Method
+### 5. Sub/Subtract Method
 Subtract the current value of the given path with the given value.
 ```js
 database.sub('age', 10); // now the age is 70.
@@ -127,7 +132,7 @@ database.pull('hobbies', ['cs', 'sleep']) // now the hobbies is ["pizza", "valor
 }
 ```
 
-# The `fetch` parameter
+## The `fetch` parameter
 Every method above accepts an optional `fetch` boolean as its last parameter (default `false`). When `true`, it re-reads the storage before running the operation and refreshes the cache with it — useful if another process might have written to the same storage since your last read.
 ```js
 database.get('name', true);
@@ -135,18 +140,4 @@ database.push('hobbies', ['sleep'], true);
 ```
 
 ## Updates
-`MM/DD/YYYY`<br>
-04/09/2026 - 1.1.*
-- Now **sum**, **sub** and **push** sets the value to the value you passed in execution when the path does not exists.
-
-05/03/2026 - 1.2.*
-- Now package doesn't uses eval anymore, providing better security.
-
-06/29/2026 - 1.3.*
-- Added support to require in commonjs.
-
-07/13/2026 - 2.0.0
-- Storage is now pluggable: choose between `JSONStorage` (default) and `SqliteStorage` when creating a `TwinDB`.
-- Added the `fetch` parameter to every method, letting you refresh the cache from storage before reading or writing.
-- Added `TwinMongoDB`, a MongoDB-backed database with the same methods as `TwinDB`, plus a `close()` method to cleanly end the connection.
-- **Breaking:** `push` and `pull` now take the values as an array (`database.push('path', ['a', 'b'])`) instead of separate arguments.
+See new updates [here](https://github.com/toddy007/twin-db/releases).
