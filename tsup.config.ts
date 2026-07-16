@@ -3,7 +3,9 @@ import { defineConfig } from 'tsup';
 export default defineConfig({
     entry: ['src/index.ts'],
     format: ['cjs', 'esm'],
-    dts: true, // gera os .d.ts para TypeScript
-    clean: true, // limpa dist/ antes de buildar
+    dts: true,
+    clean: true,
     sourcemap: true,
+    external: ['node:sqlite'],
+    platform: 'node',
 });

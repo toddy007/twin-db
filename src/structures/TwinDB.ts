@@ -32,9 +32,9 @@ export class TwinDB {
         if (![JSONStorage, SqliteStorage].includes(options.storage))
             throw new Error('Invalid storage type passed in options');
 
-        // @ts-expect-error - options.table existts  there
         this.storage =
             options.storage === SqliteStorage
+                // @ts-expect-error - table and key exists here
                 ? new options.storage(solvedPath, options.table, options.key)
                 : new options.storage(solvedPath);
 
@@ -86,6 +86,8 @@ export class TwinDB {
         return this.update(path, null);
     }
 
+    public remove = this.delete;
+
     private sumOrSub(
         path: string,
         value: number,
@@ -117,9 +119,13 @@ export class TwinDB {
         return this.sumOrSub(path, value, 'sum', fetch);
     }
 
+    public add = this.sum;
+
     public sub(path: string, value: number, fetch: boolean = false) {
         return this.sumOrSub(path, value, 'sub', fetch);
     }
+
+    public subtract = this.sub;
 
     public concat(path: string, value: string, fetch: boolean = false) {
         if (!path || typeof path !== 'string')

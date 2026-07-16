@@ -8,16 +8,20 @@ export type StorageType = typeof SqliteStorage | typeof JSONStorage;
 export type StorageInstanceType = SqliteStorage | JSONStorage;
 
 export interface DefaultOptions {
-    storage: StorageType;
+    storage?: StorageType;
 }
 
-export interface SqliteStorageOptions {
+export interface JSONStorageOptions extends DefaultOptions {
+    storage?: typeof JSONStorage;
+}
+
+export interface SqliteStorageOptions extends DefaultOptions {
     key?: string;
     table?: string;
     storage: typeof SqliteStorage;
 }
 
-export type TwinDBOptions = DefaultOptions | SqliteStorageOptions;
+export type TwinDBOptions = JSONStorageOptions | SqliteStorageOptions;
 
 export interface DefaultSchemaType {
     _id: string;

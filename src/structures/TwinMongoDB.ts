@@ -114,6 +114,8 @@ export class TwinMongoDB {
         return this.update(path, null);
     }
 
+    public remove = this.delete;
+
     private async sumOrSub(
         path: string,
         value: number,
@@ -149,9 +151,13 @@ export class TwinMongoDB {
         return this.sumOrSub(path, value, 'sum', fetch);
     }
 
+    public add = this.sum;
+
     public async sub(path: string, value: number, fetch: boolean = false) {
         return this.sumOrSub(path, value, 'sub', fetch);
     }
+
+    public subtract = this.sub;
 
     public async concat(path: string, value: string, fetch: boolean = false) {
         if (!path || typeof path !== 'string')
