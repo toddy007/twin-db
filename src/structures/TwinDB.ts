@@ -86,7 +86,9 @@ export class TwinDB {
         return this.update(path, null);
     }
 
-    public remove = this.delete;
+    public remove(path: string, fetch: boolean = false) {
+        return this.delete(path, fetch);
+    };
 
     private sumOrSub(
         path: string,
@@ -119,13 +121,17 @@ export class TwinDB {
         return this.sumOrSub(path, value, 'sum', fetch);
     }
 
-    public add = this.sum;
+    public add(path: string, value: number, fetch: boolean = false) {
+        return this.sum(path, value, fetch);
+    }
 
     public sub(path: string, value: number, fetch: boolean = false) {
         return this.sumOrSub(path, value, 'sub', fetch);
     }
 
-    public subtract = this.sub;
+    public subtract(path: string, value: number, fetch: boolean = false) {
+        return this.sub(path, value, fetch);
+    }
 
     public concat(path: string, value: string, fetch: boolean = false) {
         if (!path || typeof path !== 'string')
