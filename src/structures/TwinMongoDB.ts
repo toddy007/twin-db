@@ -81,10 +81,10 @@ export class TwinMongoDB {
         return this.update(path, value, fetch);
     }
 
-    public async get(
+    public async get<T = unknown>(
         path: string,
         fetch: boolean = false,
-    ): Promise<unknown | null> {
+    ): Promise<T | null> {
         if (!path || typeof path !== 'string')
             throw new Error(pathErrorMessage);
 
@@ -94,7 +94,7 @@ export class TwinMongoDB {
             this.cache = data ? data.data : {};
         }
 
-        return lodash.get(this.cache, path, null);
+        return lodash.get(this.cache, path, null) as T | null;
     }
 
     public async delete(path: string, fetch: boolean = false) {

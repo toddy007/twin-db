@@ -64,13 +64,13 @@ export class TwinDB {
         return this.update(path, value, fetch);
     }
 
-    public get(path: string, fetch: boolean = false): unknown | null {
+    public get<T = unknown>(path: string, fetch: boolean = false): T | null {
         if (!path || typeof path !== 'string')
             throw new Error(pathErrorMessage);
 
         if (fetch) this.cache = this.storage.get();
 
-        return lodash.get(this.cache, path, null);
+        return lodash.get(this.cache, path, null) as T | null;
     }
 
     public delete(path: string, fetch: boolean = false) {
