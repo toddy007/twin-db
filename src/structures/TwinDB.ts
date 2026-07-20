@@ -73,6 +73,31 @@ export class TwinDB {
         return lodash.get(this.cache, path, null) as T | null;
     }
 
+    public all(
+        path?: string,
+        fetch: boolean = false,
+    ): { id: string; value: unknown }[] {
+        if (path && typeof path !== 'string')
+            throw new Error(pathErrorMessage);
+
+        if (fetch) this.cache = this.storage.get();
+
+        const currentValue = path ? this.get(path) : this.cache;
+        if (
+            !currentValue ||
+            typeof currentValue !== 'object' ||
+            Array.isArray(currentValue)
+        )
+            throw new Error(
+                'The value of this path is not an object or the path does not exists',
+            );
+
+        return Object.entries(currentValue).map(([id, value]) => ({
+            id,
+            value,
+        }));
+    }
+
     public delete(path: string, fetch: boolean = false) {
         if (!path || typeof path !== 'string')
             throw new Error(pathErrorMessage);

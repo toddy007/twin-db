@@ -97,6 +97,34 @@ export class TwinMongoDB {
         return lodash.get(this.cache, path, null) as T | null;
     }
 
+    public async all(
+        path?: string,
+        fetch: boolean = false,
+    ): Promise<{ id: string; value: unknown }[]> {
+        if (path && typeof path !== 'string')
+            throw new Error(pathErrorMessage);
+
+        if (fetch) {
+            const data = await this.collection.findOne({ _id: this.id });
+            this.cache = data ? data.data : {};
+        };
+
+        const currentValue = path ? this.get(path) : this.cache;
+        if (
+            !currentValue ||
+            typeof currentValue !== 'object' ||
+            Array.isArray(currentValue)
+        )
+            throw new Error(
+                'The value of this path is not an object or the path does not exists',
+            );
+
+        return Object.entries(currentValue).map(([id, value]) => ({
+            id,
+            value,
+        }));
+    }
+
     public async delete(path: string, fetch: boolean = false) {
         if (!path || typeof path !== 'string')
             throw new Error(pathErrorMessage);
