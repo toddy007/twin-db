@@ -50,7 +50,7 @@ export class TwinDB {
 
         lodash.set(this.cache, path, value);
 
-        this.storage.set(JSON.stringify(this.cache));
+        this.storage.set(JSON.stringify(this.cache, null, 2));
 
         return this.cache;
     }
