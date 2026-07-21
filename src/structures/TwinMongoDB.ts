@@ -104,12 +104,13 @@ export class TwinMongoDB {
         if (path && typeof path !== 'string')
             throw new Error(pathErrorMessage);
 
+        await this.ready();
         if (fetch) {
             const data = await this.collection.findOne({ _id: this.id });
             this.cache = data ? data.data : {};
         };
 
-        const currentValue = path ? this.get(path) : this.cache;
+        const currentValue = path ? await this.get(path) : this.cache;
         if (
             !currentValue ||
             typeof currentValue !== 'object' ||
@@ -123,6 +124,15 @@ export class TwinMongoDB {
             id,
             value,
         }));
+    }
+
+    public async has(path: string, fetch: boolean = false): Promise<boolean> {
+        if (!path || typeof path !== 'string')
+            throw new Error(pathErrorMessage);
+
+        const currentValue = await this.get(path, fetch);
+
+        return currentValue !== null;
     }
 
     public async delete(path: string, fetch: boolean = false) {

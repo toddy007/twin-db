@@ -98,6 +98,15 @@ export class TwinDB {
         }));
     }
 
+    public has(path: string, fetch: boolean = false): boolean {
+        if (!path || typeof path !== 'string')
+            throw new Error(pathErrorMessage);
+
+        const currentValue = this.get(path, fetch);
+
+        return currentValue !== null;
+    }
+
     public delete(path: string, fetch: boolean = false) {
         if (!path || typeof path !== 'string')
             throw new Error(pathErrorMessage);
